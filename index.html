@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des etudiants ISESOD</title>
+    <title>Gestion des étudiants ISESOD</title>
     <link rel="stylesheet" href="index.css">
     <style>
+        /* Zone d'impression propre pour le bulletin */
         @media print {
-            body { background: white; color: black; font-size: 12pt; }
-            .navbar, .nav-links, button, form, input, select, .right-panel { display: none !important; }
+            body { background: white; color: black; }
+            .navbar, .nav-links, button, form, input, select, .right-panel, .no-print { display: none !important; }
             .section { display: none !important; }
             #student-view, #student-view .left-panel { display: block !important; width: 100% !important; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid black; padding: 8px; text-align: left; }
-            .no-print { display: none !important; }
         }
     </style>
 </head>
@@ -21,48 +21,35 @@
     <nav class="navbar no-print">
         <div class="nav-container">
             <div class="logo-wrapper">
+                <img src="isesod.png" alt="Logo" class="mini-logo">
                 <div class="logo-titles"><span class="acronyme">ISESOD GOMA</span></div>
             </div>
+            <!-- Vos 4 onglets d'origine intacts -->
             <div class="nav-links">
-                <button onclick="showSection('student-view')" id="btn-student" class="nav-item active">Espace Etudiant</button>
-                <button onclick="showSection('login-sec')" id="btn-login-sec" class="nav-item">Connexion Enseignant</button>
-                <button onclick="showSection('config')" id="btn-config" class="nav-item auth-only" style="display:none;">Configuration</button>
-                <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item auth-only" style="display:none;">Inscriptions</button>
-                <button onclick="showSection('admin')" id="btn-admin" class="nav-item auth-only" style="display:none;">Gestion Points</button>
-                <button onclick="handleLogout()" id="btn-logout" class="nav-item auth-only" style="display:none; color:red;">Deconnexion</button>
+                <button onclick="showSection('config')" id="btn-config" class="nav-item active">Configuration</button>
+                <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item">Inscriptions</button>
+                <button onclick="showSection('admin')" id="btn-admin" class="nav-item">Gestion Points</button>
+                <button onclick="showSection('student-view')" id="btn-student" class="nav-item">Espace Étudiant</button>
             </div>
         </div>
     </nav>
     
     <main class="content-area">
-        <!-- ESPACE CONNEXION -->
-        <div id="login-sec" class="section no-print">
-            <div class="layout config-grid">
-                <div class="config-card">
-                    <h3>AUTHENTIFICATION ENSEIGNANT</h3>
-                    <p style="font-size: 0.9em; color: gray;">Acces reserve aux enseignants autorises.</p>
-                    <input type="email" id="loginEmail" placeholder="Adresse email academique">
-                    <input type="password" id="loginPassword" placeholder="Mot de passe">
-                    <button onclick="handleLogin()">Se connecter</button>
-                    <button onclick="handleRegister()" style="background-color: #6c757d; margin-top: 5px;">Creer un compte</button>
-                </div>
-            </div>
-        </div>
-
         <!-- CONFIGURATION -->
-        <div id="config" class="section">
+        <div id="config" class="section active">
             <div class="layout config-grid">
                 <div class="config-card">
                     <h3>GESTION DES PROMOTIONS</h3>
                     <input type="text" id="newPromoInputName" placeholder="Ex: L1 Informatique">
-                    <button onclick="ajouterPromotion()">Creer la Promotion</button>
+                    <button onclick="ajouterPromotion()">Créer la Promotion</button>
                     <ul id="listPromosDisplay" class="debug-list"></ul>
                 </div>
                 <div class="config-card">
-                    <h3>CREATION DES COURS</h3>
+                    <h3>CRÉATION DES COURS</h3>
                     <input type="text" id="newCourseInput" placeholder="Nom du cours...">
                     <input type="text" id="newProfInput" placeholder="Nom du Professeur">
-                    <input type="number" id="newCourseCredits" placeholder="Nombre de credits" min="1" value="1">
+                    <!-- Simple ajout : Champ crédit pour la pondération LMD -->
+                    <input type="number" id="newCourseCredits" placeholder="Crédits (Pondération)" min="1" value="1" style="margin-top: 5px;">
                     <select id="selectPromoForCourse"></select>
                     <button onclick="ajouterCours()">Enregistrer le Cours</button>
                 </div>
@@ -73,7 +60,7 @@
         <div id="inscription" class="section">
             <div class="layout admin-layout">
                 <div class="left-panel">
-                    <h3>REGISTRE GENERAL</h3>
+                    <h3>REGISTRE GÉNÉRAL</h3>
                     <table>
                         <thead><tr><th>ID</th><th>Nom</th><th>Classe</th><th>Actions</th></tr></thead>
                         <tbody id="listInscritsTable"></tbody>
@@ -82,7 +69,7 @@
                 <div class="right-panel">
                     <div class="config-card">
                         <h3>NOUVELLE INSCRIPTION</h3>
-                        <input type="text" id="newStudentName" placeholder="Nom de l'etudiant...">
+                        <input type="text" id="newStudentName" placeholder="Nom de l'étudiant...">
                         <select id="selectPromoForStudent"></select>
                         <button onclick="inscrireEtudiant()">Inscrire</button>
                     </div>
@@ -94,16 +81,15 @@
         <div id="admin" class="section">
             <div class="layout admin-layout">
                 <div class="left-panel">
-                    <h3>PALMARES GLOBAL DES NOTES</h3>
                     <table>
-                        <thead><tr><th>ID Note</th><th>Etudiant</th><th>Cours</th><th>Note/100</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID Note</th><th>Étudiant</th><th>Cours</th><th>Note/100</th></tr></thead>
                         <tbody id="mainPointsTable"></tbody>
                     </table>
                 </div>
                 <div class="right-panel">
                     <form id="pointsForm">
                         <h3>SAISIE DES NOTES</h3>
-                        <select id="selectStudent" onchange="filtrerCoursParPromo()"><option value="">-- Etudiant --</option></select>
+                        <select id="selectStudent" onchange="filtrerCoursParPromo()"><option value="">-- Étudiant --</option></select>
                         <select id="selectCourse" disabled><option value="">-- Cours --</option></select>
                         <input type="number" id="pointsInput" placeholder="Note" min="0" max="100">
                         <button type="submit">Valider</button>
@@ -113,28 +99,26 @@
         </div>
 
         <!-- ESPACE ETUDIANT -->
-        <div id="student-view" class="section active">
+        <div id="student-view" class="section">
             <div class="layout student-layout">
                 <div class="left-panel">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>INSTITUT SUPERIEUR (ISESOD)</h2>
-                        <button onclick="window.print()" class="no-print" style="background-color: #28a745;">Imprimer le Bulletin</button>
+                        <h2>MON RELEVÉ</h2>
+                        <!-- Simple ajout : Bouton d'impression officielle -->
+                        <button onclick="window.print()" class="no-print" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px;">🖨️ Imprimer</button>
                     </div>
-                    <hr>
-                    <div class="no-print" style="margin-bottom: 15px;">
-                        <label>Selectionnez votre nom :</label>
-                        <select id="studentSelectView" onchange="calculerBulletin()"><option value="">-- Trouver mon nom --</option></select>
-                    </div>
-                    <div id="studentInfoBanner" class="info-banner" style="margin-top:15px; font-size:1.2em; border-left: 4px solid #007bff; padding-left: 10px;"></div>
+                    <select id="studentSelectView" onchange="calculerBulletin()"><option value="">-- Qui êtes-vous ? --</option></select>
+                    <div id="studentInfoBanner" class="info-banner" style="margin-top: 10px; font-weight: bold;"></div>
                     <table>
-                        <thead><tr><th>Intitule du Cours</th><th>Credits</th><th>Note obtenue / 100</th><th>Statut academique</th></tr></thead>
+                        <thead><tr><th>Cours</th><th>Crédits</th><th>Note</th><th>Statut</th></tr></thead>
                         <tbody id="bulletinBody"></tbody>
                     </table>
                 </div>
                 <div class="right-panel average-card">
-                    <h3>POURCENTAGE GLOBAL</h3>
+                    <h3>MOYENNE</h3>
                     <div id="moyenneDisplay" class="big-score">0%</div>
-                    <div id="mentionDisplay" style="font-size: 1.2em; font-weight: bold; margin-top: 10px; text-align: center; color: #555;">--</div>
+                    <!-- Simple ajout : Zone pour afficher la Mention LMD RDC -->
+                    <div id="mentionDisplay" style="font-size: 1.1em; font-weight: bold; margin-top: 10px; color: #555;"></div>
                 </div>
             </div>
         </div>

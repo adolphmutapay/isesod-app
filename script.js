@@ -1,9 +1,15 @@
-// 1. CONFIGURATION INITIALE (CORRIGÉE AVEC HTTPS POUR L'URL)
-const SUPABASE_URL = 'supabase.co'; 
+// 1. CHARGEMENT DYNAMIQUE ET SÉCURISÉ DU SDK SUPABASE
+const cdnUrl = "https" + "://" + "cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+const scriptSupabase = document.createElement('script');
+scriptSupabase.src = cdnUrl;
+document.head.appendChild(scriptSupabase);
+
+// 2. CONFIGURATION DE VOTRE PROJET ADOLPHMUTAPAY
+const SUPABASE_URL = "https" + "://" + "ibvdeuhfjeinlcvmmxof.supabase.co"; 
 const SUPABASE_ANON_KEY = 'sb_publishable_bVPliN88Myt9GWbJH02seQ_0tTccRs2'; 
 let supabaseClient;
 
-// 2. NAVIGATION
+// 3. NAVIGATION INTERNE
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -15,15 +21,17 @@ function showSection(id) {
     if(targetBtn) targetBtn.classList.add('active');
 }
 
-// 3. INITIALISATION
-document.addEventListener('DOMContentLoaded', () => {
+// 4. INITIALISATION APRÈS CHARGEMENT DU SCRIPT EXTERNE
+scriptSupabase.onload = () => {
     if (typeof supabase !== 'undefined') {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         refreshUI();
     } else {
-        console.error("Erreur critique : Le module de connexion Supabase n'est pas accessible.");
+        console.error("Le module de connexion Supabase n'est pas accessible.");
     }
+};
 
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('pointsForm');
     if(form) {
         form.addEventListener('submit', (e) => {
@@ -33,8 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 4. ACTIONS DE CRÉATION SUR LA BASE DE DONNÉES
+// 5. ACTIONS SUR LA BASE DE DONNÉES
 async function ajouterPromotion() {
+    if(!supabaseClient) return alert("Connexion Supabase en cours, veuillez patienter...");
     const input = document.getElementById('newPromoInputName');
     if (!input || !input.value.trim()) return alert("Veuillez saisir un nom de promotion.");
 
@@ -48,6 +57,7 @@ async function ajouterPromotion() {
 }
 
 async function ajouterCours() {
+    if(!supabaseClient) return alert("Connexion Supabase en cours...");
     const nom = document.getElementById('newCourseInput').value.trim();
     const prof = document.getElementById('newProfInput').value.trim();
     const promo = document.getElementById('selectPromoForCourse').value;
@@ -65,6 +75,7 @@ async function ajouterCours() {
 }
 
 async function inscrireEtudiant() {
+    if(!supabaseClient) return alert("Connexion Supabase en cours...");
     const nom = document.getElementById('newStudentName').value.trim();
     const classe = document.getElementById('selectPromoForStudent').value;
 
@@ -80,6 +91,7 @@ async function inscrireEtudiant() {
 }
 
 async function ajouterNote() {
+    if(!supabaseClient) return alert("Connexion Supabase en cours...");
     const sid = document.getElementById('selectStudent').value;
     const cours = document.getElementById('selectCourse').value;
     const pts = document.getElementById('pointsInput').value;
@@ -103,7 +115,7 @@ async function ajouterNote() {
     }
 }
 
-// 5. CHARGEMENT ET SYNC DYNAMIQUE DES INTERFACES
+// 6. SYNC ET AFFICHAGE DYNAMIQUE
 async function refreshUI() {
     if(!supabaseClient) return;
 

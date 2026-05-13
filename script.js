@@ -1,4 +1,4 @@
-// 1. CONFIGURATION INITIALE
+// 1. CONFIGURATION INITIALE (CORRIGÉE AVEC HTTPS)
 const SUPABASE_URL = 'supabase.co'; 
 const SUPABASE_ANON_KEY = 'sb_publishable_bVPliN88Myt9GWbJH02seQ_0tTccRs2'; 
 let supabaseClient;
@@ -169,7 +169,7 @@ async function filtrerCoursParPromo() {
     
     const { data: std } = await supabaseClient.from('students').select('classe').eq('id', parseInt(id)).single();
     if(std) {
-        const { data: crs } = await supabaseClient.from('courses').eq('promo', std.classe);
+        const { data: crs = [] } = await supabaseClient.from('courses').eq('promo', std.classe);
         if(sel) {
             sel.disabled = false;
             sel.innerHTML = crs && crs.length > 0 ? crs.map(c => `<option value="${c.nom}">${c.nom}</option>`).join('') : '<option value="">Aucun cours disponible</option>';

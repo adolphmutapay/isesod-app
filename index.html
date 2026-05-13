@@ -5,25 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des étudiants ISESOD</title>
     <link rel="stylesheet" href="index.css">
+    <style>
+        /* Styles rapides pour l'impression du bulletin */
+        @media print {
+            body { background: white; color: black; font-size: 12pt; }
+            .navbar, .nav-links, button, form, input, select, .right-panel { display: none !important; }
+            .section { display: none !important; }
+            #student-view, #student-view .left-panel { display: block !important; width: 100% !important; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid black; padding: 8px; text-align: left; }
+            .no-print { display: none !important; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
+    <nav class="navbar no-print">
         <div class="nav-container">
             <div class="logo-wrapper">
                 <div class="logo-titles"><span class="acronyme">ISESOD GOMA</span></div>
             </div>
             <div class="nav-links">
-                <button onclick="showSection('config')" id="btn-config" class="nav-item active">Configuration</button>
-                <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item">Inscriptions</button>
-                <button onclick="showSection('admin')" id="btn-admin" class="nav-item">Gestion Points</button>
-                <button onclick="showSection('student-view')" id="btn-student" class="nav-item">Espace Étudiant</button>
+                <button onclick="showSection('student-view')" id="btn-student" class="nav-item active">Espace Étudiant</button>
+                <button onclick="showSection('login-sec')" id="btn-login-sec" class="nav-item">Connexion Enseignant</button>
+                <button onclick="showSection('config')" id="btn-config" class="nav-item auth-only" style="display:none;">Configuration</button>
+                <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item auth-only" style="display:none;">Inscriptions</button>
+                <button onclick="showSection('admin')" id="btn-admin" class="nav-item auth-only" style="display:none;">Gestion Points</button>
+                <button onclick="handleLogout()" id="btn-logout" class="nav-item auth-only" style="display:none; color:red;">Déconnexion</button>
             </div>
         </div>
     </nav>
     
     <main class="content-area">
-        <!-- CONFIGURATION -->
-        <div id="config" class="section active">
+        <!-- ESPACE CONNEXION -->
+        <div id="login-sec" class="section no-print">
+            <div class="layout config-grid">
+                <div class="config-card">
+                    <h3>AUTHENTIFICATION ENSEIGNANT</h3>
+                    <p style="font-size: 0.9em; color: gray;">Seuls les enseignants enregistrés dans la table 'allowed_teachers' peuvent se connecter pour modifier les données.</p>
+                    <input type="email" id="loginEmail" placeholder="Adresse email académique">
+                    <input type="password" id="loginPassword" placeholder="Mot de passe">
+                    <button onclick="handleLogin()">Se connecter</button>
+                    <button onclick="handleRegister()" style="background-color: #6c757d; margin-top: 5px;">Créer un compte</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONFIGURATION (AUTH ONLY) -->
+        <div id="config" class="section">
             <div class="layout config-grid">
                 <div class="config-card">
                     <h3>GESTION DES PROMOTIONS</h3>
@@ -35,13 +63,14 @@
                     <h3>CRÉATION DES COURS</h3>
                     <input type="text" id="newCourseInput" placeholder="Nom du cours...">
                     <input type="text" id="newProfInput" placeholder="Nom du Professeur">
+                    <input type="number" id="newCourseCredits" placeholder="Nombre de crédits (Pondération)" min="1" value="1">
                     <select id="selectPromoForCourse"></select>
                     <button onclick="ajouterCours()">Enregistrer le Cours</button>
                 </div>
             </div>
         </div>
 
-        <!-- INSCRIPTION -->
+        <!-- INSCRIPTION (AUTH ONLY) -->
         <div id="inscription" class="section">
             <div class="layout admin-layout">
                 <div class="left-panel">
@@ -62,12 +91,13 @@
             </div>
         </div>
 
-        <!-- GESTION POINTS -->
+        <!-- GESTION POINTS (AUTH ONLY) -->
         <div id="admin" class="section">
             <div class="layout admin-layout">
                 <div class="left-panel">
+                    <h3>PALMARÈS GLOBAL DES NOTES</h3>
                     <table>
-                        <thead><tr><th>ID Note</th><th>Étudiant</th><th>Cours</th><th>Note/100</th></tr></thead>
+                        <thead><tr><th>ID Note</th><th>Étudiant</th><th>Cours</th><th>Note/100</th><th>Actions</th></tr></thead>
                         <tbody id="mainPointsTable"></tbody>
                     </table>
                 </div>
@@ -83,21 +113,29 @@
             </div>
         </div>
 
-        <!-- ESPACE ETUDIANT -->
-        <div id="student-view" class="section">
+        <!-- ESPACE ETUDIANT (PUBLIC) -->
+        <div id="student-view" class="section active">
             <div class="layout student-layout">
                 <div class="left-panel">
-                    <h2>MON RELEVÉ</h2>
-                    <select id="studentSelectView" onchange="calculerBulletin()"><option value="">-- Qui êtes-vous ? --</option></select>
-                    <div id="studentInfoBanner" class="info-banner"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>INSTITUT SUPÉRIEUR ENSEIGNEMENT (ISESOD)</h2>
+                        <button onclick="window.print()" class="no-print" style="background-color: #28a745;">🖨️ Imprimer le Bulletin</button>
+                    </div>
+                    <hr>
+                    <div class="no-print" style="margin-bottom: 15px;">
+                        <label>Sélectionnez votre identifiant pour afficher vos cotes :</label>
+                        <select id="studentSelectView" onchange="calculerBulletin()"><option value="">-- Sélectionner mon nom --</option></select>
+                    </div>
+                    <div id="studentInfoBanner" class="info-banner" style="margin-top:15px; font-size:1.2em; border-left: 4px solid #007bff; padding-left: 10px;"></div>
                     <table>
-                        <thead><tr><th>Cours</th><th>Note</th><th>Statut</th></tr></thead>
+                        <thead><tr><th>Intitulé du Cours</th><th>Crédits</th><th>Note obtenue / 100</th><th>Statut académique</th></tr></thead>
                         <tbody id="bulletinBody"></tbody>
                     </table>
                 </div>
                 <div class="right-panel average-card">
-                    <h3>MOYENNE</h3>
+                    <h3>POURCENTAGE GLOBAL</h3>
                     <div id="moyenneDisplay" class="big-score">0%</div>
+                    <div id="mentionDisplay" style="font-size: 1.2em; font-weight: bold; margin-top: 10px; text-align: center; color: #555;">--</div>
                 </div>
             </div>
         </div>

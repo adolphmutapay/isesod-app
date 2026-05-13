@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des étudiants ISESOD</title>
+    <title>Gestion des etudiants ISESOD</title>
     <link rel="stylesheet" href="index.css">
     <style>
-        /* Zone d'impression propre pour le bulletin */
         @media print {
             body { background: white; color: black; }
             .navbar, .nav-links, button, form, input, select, .right-panel, .no-print { display: none !important; }
@@ -21,15 +20,13 @@
     <nav class="navbar no-print">
         <div class="nav-container">
             <div class="logo-wrapper">
-                <img src="isesod.png" alt="Logo" class="mini-logo">
                 <div class="logo-titles"><span class="acronyme">ISESOD GOMA</span></div>
             </div>
-            <!-- Vos 4 onglets d'origine intacts -->
             <div class="nav-links">
                 <button onclick="showSection('config')" id="btn-config" class="nav-item active">Configuration</button>
                 <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item">Inscriptions</button>
                 <button onclick="showSection('admin')" id="btn-admin" class="nav-item">Gestion Points</button>
-                <button onclick="showSection('student-view')" id="btn-student" class="nav-item">Espace Étudiant</button>
+                <button onclick="showSection('student-view')" id="btn-student" class="nav-item">Espace Etudiant</button>
             </div>
         </div>
     </nav>
@@ -41,15 +38,14 @@
                 <div class="config-card">
                     <h3>GESTION DES PROMOTIONS</h3>
                     <input type="text" id="newPromoInputName" placeholder="Ex: L1 Informatique">
-                    <button onclick="ajouterPromotion()">Créer la Promotion</button>
+                    <button onclick="ajouterPromotion()">Creer la Promotion</button>
                     <ul id="listPromosDisplay" class="debug-list"></ul>
                 </div>
                 <div class="config-card">
-                    <h3>CRÉATION DES COURS</h3>
+                    <h3>CREATION DES COURS</h3>
                     <input type="text" id="newCourseInput" placeholder="Nom du cours...">
                     <input type="text" id="newProfInput" placeholder="Nom du Professeur">
-                    <!-- Simple ajout : Champ crédit pour la pondération LMD -->
-                    <input type="number" id="newCourseCredits" placeholder="Crédits (Pondération)" min="1" value="1" style="margin-top: 5px;">
+                    <input type="number" id="newCourseCredits" placeholder="Credits (Ponderation)" min="1" value="1" style="margin-top: 5px;">
                     <select id="selectPromoForCourse"></select>
                     <button onclick="ajouterCours()">Enregistrer le Cours</button>
                 </div>
@@ -60,7 +56,7 @@
         <div id="inscription" class="section">
             <div class="layout admin-layout">
                 <div class="left-panel">
-                    <h3>REGISTRE GÉNÉRAL</h3>
+                    <h3>REGISTRE GENERAL</h3>
                     <table>
                         <thead><tr><th>ID</th><th>Nom</th><th>Classe</th><th>Actions</th></tr></thead>
                         <tbody id="listInscritsTable"></tbody>
@@ -69,7 +65,7 @@
                 <div class="right-panel">
                     <div class="config-card">
                         <h3>NOUVELLE INSCRIPTION</h3>
-                        <input type="text" id="newStudentName" placeholder="Nom de l'étudiant...">
+                        <input type="text" id="newStudentName" placeholder="Nom de l'etudiant...">
                         <select id="selectPromoForStudent"></select>
                         <button onclick="inscrireEtudiant()">Inscrire</button>
                     </div>
@@ -82,14 +78,14 @@
             <div class="layout admin-layout">
                 <div class="left-panel">
                     <table>
-                        <thead><tr><th>ID Note</th><th>Étudiant</th><th>Cours</th><th>Note/100</th></tr></thead>
+                        <thead><tr><th>ID Note</th><th>Etudiant</th><th>Cours</th><th>Note/100</th></tr></thead>
                         <tbody id="mainPointsTable"></tbody>
                     </table>
                 </div>
                 <div class="right-panel">
                     <form id="pointsForm">
                         <h3>SAISIE DES NOTES</h3>
-                        <select id="selectStudent" onchange="filtrerCoursParPromo()"><option value="">-- Étudiant --</option></select>
+                        <select id="selectStudent" onchange="filtrerCoursParPromo()"><option value="">-- Etudiant --</option></select>
                         <select id="selectCourse" disabled><option value="">-- Cours --</option></select>
                         <input type="number" id="pointsInput" placeholder="Note" min="0" max="100">
                         <button type="submit">Valider</button>
@@ -103,21 +99,19 @@
             <div class="layout student-layout">
                 <div class="left-panel">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>MON RELEVÉ</h2>
-                        <!-- Simple ajout : Bouton d'impression officielle -->
-                        <button onclick="window.print()" class="no-print" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px;">🖨️ Imprimer</button>
+                        <h2>MON RELEVE</h2>
+                        <button onclick="window.print()" class="no-print" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px;">Imprimer</button>
                     </div>
-                    <select id="studentSelectView" onchange="calculerBulletin()"><option value="">-- Qui êtes-vous ? --</option></select>
+                    <select id="studentSelectView" onchange="calculerBulletin()"><option value="">-- Qui etes-vous ? --</option></select>
                     <div id="studentInfoBanner" class="info-banner" style="margin-top: 10px; font-weight: bold;"></div>
                     <table>
-                        <thead><tr><th>Cours</th><th>Crédits</th><th>Note</th><th>Statut</th></tr></thead>
+                        <thead><tr><th>Cours</th><th>Credits</th><th>Note</th><th>Statut</th></tr></thead>
                         <tbody id="bulletinBody"></tbody>
                     </table>
                 </div>
                 <div class="right-panel average-card">
                     <h3>MOYENNE</h3>
                     <div id="moyenneDisplay" class="big-score">0%</div>
-                    <!-- Simple ajout : Zone pour afficher la Mention LMD RDC -->
                     <div id="mentionDisplay" style="font-size: 1.1em; font-weight: bold; margin-top: 10px; color: #555;"></div>
                 </div>
             </div>

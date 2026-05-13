@@ -13,9 +13,10 @@
                 <img src="isesod.png" alt="Logo" class="mini-logo">
                 <div class="logo-titles"><span class="acronyme">ISESOD GOMA</span></div>
             </div>
+            <!-- Boutons corrigés : Configuration est actif par défaut -->
             <div class="nav-links">
-                <button onclick="showSection('config')" id="btn-config" class="nav-item">Configuration</button>
-                <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item active">Inscriptions</button>
+                <button onclick="showSection('config')" id="btn-config" class="nav-item active">Configuration</button>
+                <button onclick="showSection('inscription')" id="btn-inscription" class="nav-item">Inscriptions</button>
                 <button onclick="showSection('admin')" id="btn-admin" class="nav-item">Gestion Points</button>
                 <button onclick="showSection('student-view')" id="btn-student" class="nav-item">Espace Étudiant</button>
             </div>
@@ -23,8 +24,8 @@
     </nav>
     
     <main class="content-area">
-        <!-- CONFIGURATION -->
-        <div id="config" class="section">
+        <!-- CONFIGURATION (Active par défaut pour créer les promos et cours en premier) -->
+        <div id="config" class="section active">
             <div class="layout config-grid">
                 <div class="config-card">
                     <h3>GESTION DES PROMOTIONS</h3>
@@ -43,7 +44,7 @@
         </div>
 
         <!-- INSCRIPTION -->
-        <div id="inscription" class="section active">
+        <div id="inscription" class="section">
             <div class="layout admin-layout">
                 <div class="left-panel">
                     <h3>REGISTRE GÉNÉRAL</h3>
@@ -104,7 +105,7 @@
         </div>
     </main>
 
-    <!-- CHARGEMENT DU SDK SUPABASE OFFICIEL (CORRIGÉ) -->
+    <!-- CHARGEMENT DU SDK SUPABASE OFFICIEL VIA HTTPS SÉCURISÉ -->
     <script src="jsdelivr.net"></script>
     <!-- LOGIQUE DE L'APPLICATION -->
     <script src="script.js"></script>

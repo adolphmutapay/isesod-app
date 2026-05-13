@@ -1,4 +1,4 @@
-// 1. CONFIGURATION INITIALE (CORRIGÉE AVEC HTTPS)
+// 1. CONFIGURATION INITIALE (CORRIGÉE AVEC HTTPS POUR L'URL)
 const SUPABASE_URL = 'supabase.co'; 
 const SUPABASE_ANON_KEY = 'sb_publishable_bVPliN88Myt9GWbJH02seQ_0tTccRs2'; 
 let supabaseClient;
@@ -107,7 +107,6 @@ async function ajouterNote() {
 async function refreshUI() {
     if(!supabaseClient) return;
 
-    // Charger les promotions
     const { data: promos } = await supabaseClient.from('promotions').select('*');
     if(promos) {
         const html = promos.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
@@ -120,7 +119,6 @@ async function refreshUI() {
         if(listDisplay) listDisplay.innerHTML = promos.map(p => `<li>${p.name}</li>`).join('');
     }
 
-    // Charger les étudiants
     const { data: students } = await supabaseClient.from('students').select('*');
     if(students) {
         const tableBody = document.getElementById('listInscritsTable');
@@ -143,7 +141,6 @@ async function refreshUI() {
         if(studentSelectView) studentSelectView.innerHTML = '<option value="">-- Qui êtes-vous ? --</option>' + optStd;
     }
 
-    // Charger la liste globale des notes pour le panneau d'administration
     const { data: globalNotes } = await supabaseClient.from('notes').select('id, cours, points, students(nom)');
     const mainPointsTable = document.getElementById('mainPointsTable');
     if(mainPointsTable && globalNotes) {
@@ -158,8 +155,7 @@ async function refreshUI() {
     }
 }
 
-// FILTRAGE LOGIQUE DES COURS SELON LA CLASSE
-async function filtrerCoursParPromo() {
+function filtrerCoursParPromo() {
     const id = document.getElementById('selectStudent').value;
     const sel = document.getElementById('selectCourse');
     if (!id) {
@@ -167,18 +163,19 @@ async function filtrerCoursParPromo() {
         return; 
     }
     
-    const { data: std } = await supabaseClient.from('students').select('classe').eq('id', parseInt(id)).single();
-    if(std) {
-        const { data: crs = [] } = await supabaseClient.from('courses').eq('promo', std.classe);
-        if(sel) {
-            sel.disabled = false;
-            sel.innerHTML = crs && crs.length > 0 ? crs.map(c => `<option value="${c.nom}">${c.nom}</option>`).join('') : '<option value="">Aucun cours disponible</option>';
+    supabaseClient.from('students').select('classe').eq('id', parseInt(id)).single().then(({data: std}) => {
+        if(std) {
+            supabaseClient.from('courses').eq('promo', std.classe).then(({data: crs}) => {
+                if(sel) {
+                    sel.disabled = false;
+                    sel.innerHTML = crs && crs.length > 0 ? crs.map(c => `<option value="${c.nom}">${c.nom}</option>`).join('') : '<option value="">Aucun cours disponible</option>';
+                }
+            });
         }
-    }
+    });
 }
 
-// 6. ESPACE ÉTUDIANT (BULLETIN ET MOYENNE GENERALE)
-async function calculerBulletin() {
+function calculerBulletin() {
     const studentId = document.getElementById('studentSelectView').value;
     const banner = document.getElementById('studentInfoBanner');
     const tableBody = document.getElementById('bulletinBody');
@@ -191,38 +188,40 @@ async function calculerBulletin() {
         return;
     }
 
-    const { data: student } = await supabaseClient.from('students').select('*').eq('id', parseInt(studentId)).single();
-    if(student) {
-        if(banner) banner.innerHTML = `<strong>Nom :</strong> ${student.nom} | <strong>Promotion :</strong> ${student.classe}`;
-        
-        const { data: notes } = await supabaseClient.from('notes').select('*').eq('student_id', student.id);
-        if(notes && notes.length > 0) {
-            let totalPoints = 0;
-            if(tableBody) {
-                tableBody.innerHTML = notes.map(n => {
-                    totalPoints += parseFloat(n.points);
-                    const statut = n.points >= 50 ? '<span style="color:green; font-weight:bold;">Validé</span>' : '<span style="color:red; font-weight:bold;">Ajourné</span>';
-                    return `<tr><td>${n.cours}</td><td>${n.points} / 100</td><td>${statut}</td></tr>`;
-                }).join('');
-            }
+    supabaseClient.from('students').select('*').eq('id', parseInt(studentId)).single().then(({data: student}) => {
+        if(student) {
+            if(banner) banner.innerHTML = `<strong>Nom :</strong> ${student.nom} | <strong>Promotion :</strong> ${student.classe}`;
+            
+            supabaseClient.from('notes').select('*').eq('student_id', student.id).then(({data: notes}) => {
+                if(notes && notes.length > 0) {
+                    let totalPoints = 0;
+                    if(tableBody) {
+                        tableBody.innerHTML = notes.map(n => {
+                            totalPoints += parseFloat(n.points);
+                            const statut = n.points >= 50 ? '<span style="color:green; font-weight:bold;">Validé</span>' : '<span style="color:red; font-weight:bold;">Ajourné</span>';
+                            return `<tr><td>${n.cours}</td><td>${n.points} / 100</td><td>${statut}</td></tr>`;
+                        }).join('');
+                    }
 
-            const moyenne = totalPoints / notes.length;
-            if(moyenneDisplay) {
-                moyenneDisplay.innerHTML = `${moyenne.toFixed(1)}%`;
-                moyenneDisplay.style.color = moyenne >= 50 ? 'green' : 'red';
-            }
-        } else {
-            if(tableBody) tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Aucune note publiée.</td></tr>';
-            if(moyenneDisplay) moyenneDisplay.innerHTML = '0%';
+                    const moyenne = totalPoints / notes.length;
+                    if(moyenneDisplay) {
+                        moyenneDisplay.innerHTML = `${moyenne.toFixed(1)}%`;
+                        moyenneDisplay.style.color = moyenne >= 50 ? 'green' : 'red';
+                    }
+                } else {
+                    if(tableBody) tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Aucune note publiée.</td></tr>';
+                    if(moyenneDisplay) moyenneDisplay.innerHTML = '0%';
+                }
+            });
         }
-    }
+    });
 }
 
-// SUPPRESSION AVEC CONVERTISSEUR ENTIER
-async function deleteRow(table, id) {
+function deleteRow(table, id) {
     if(confirm("Confirmer la suppression définitive ?")) {
-        const { error } = await supabaseClient.from(table).delete().eq('id', parseInt(id));
-        if(error) alert("Action impossible : " + error.message);
-        else refreshUI();
+        supabaseClient.from(table).delete().eq('id', parseInt(id)).then(({error}) => {
+            if(error) alert("Action impossible : " + error.message);
+            else refreshUI();
+        });
     }
 }
